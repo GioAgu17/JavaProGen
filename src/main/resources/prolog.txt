@@ -1,0 +1,16 @@
+canExtend(A,B) :- not(A==B), not(classCircularity(B,A)), not(extends(A,_)). 
+classCircularity(B,A) :- extends(B,A). 
+classCircularity(B,A) :- extends(B,C), classCircularity(C,A). 
+useMethod(Name,ClassName,RetType,F_Lst) :- not(method(Name,_,ClassName,RetType,F_Lst)). 
+formalParams(Lst) :- is_set(Lst). 
+lookForNode(N,X,Y,Z,ParId,Depth) :- Z is Depth-1, X is ParId, node(N,X,Y,Z). 
+lookForNode(N,X,Y,Z,ParId,Depth) :- T is Depth-1, U is ParId, node(_,U,S,T), lookForNode(N,X,Y,Z,S,T). 
+useRetStmt(RetType,ParId,Depth) :- lookForNode('<methoddeclaration>',X,_,_, ParId, Depth), method(_,X,_,RetType,_). 
+canUseConstructor(Name,F_Lst) :- not(constructor(Name,_,F_Lst)). 
+useThisInvocation(Args,ParId,Depth) :- not(sameArgs(Args,ParId,Depth)), lookForNode(' <constructor declaration>',X,_,_,ParId,Depth), constructor(Class,X,_), constructor(Class,_,Args). 
+sameArgs(Args,ParId,Depth) :- lookForNode(' <constructor declaration>',X,_,_,ParId,Depth), constructor(_,X,Args). 
+is_set(Lst) :- setof(X, member(X, Lst), Set), length(Lst, N), length(Set, N). 
+useSuperInvocation(Args,ParId,Depth) :- lookForNode(' <constructor declaration>',X,_,_,ParId,Depth), constructor(Class,X,_), extends(Class,Y), constructor(Y,_,Args). 
+useMethodInvocation(Name,Class,Args) :- method(Name,_,Class,_,Args). 
+useClassInstanceCreation(Class,Args) :- constructor(Class,_,Args). 
+canInitializeVar(Exp,Act) :- Exp == Actual. 

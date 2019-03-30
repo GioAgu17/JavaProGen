@@ -1,0 +1,23 @@
+<configuration debug="false">
+    <appender name="INFO-FILE" debug="false" class="ch.qos.logback.core.FileAppender">
+        <file>info.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+        </encoder>
+    </appender>
+    <appender name="TRACE-FILE" class="ch.qos.logback.core.FileAppender">
+        <file>trace.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+        </encoder>
+    </appender>
+    <!-- additivity=false ensures analytics data only goes to the analytics log -->
+    <logger name="trace" level="TRACE" additivity="false">
+        <appender-ref ref="TRACE-FILE"/>
+    </logger>
+    <root level="info">
+        <appender-ref ref="INFO-FILE"/>
+    </root>
+</configuration>
