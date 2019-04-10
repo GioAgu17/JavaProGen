@@ -6,14 +6,18 @@ import scala.collection.JavaConverters._
 
 class ConfigurationRetriever(val config: Config) {
 
+  val locRange: Int = config.getInt("progen.totalLOC")
+  def getLocRange: Int = locRange
 
 
   val maxInterface: Int = config.getInt("progen.noOfInterfaces.max")
   val minInterface: Int = config.getInt("progen.noOfInterfaces.min")
-
   def getInterfaces: Int = {
     getNumberInBetween(minInterface,maxInterface)
   }
+
+  val useServerRPC: Boolean = config.getBoolean("progen.useServerRPC")
+  def getUseServerRPC: Boolean = useServerRPC
 
   val maxClasses: Int = config.getInt("progen.noOfClasses.max")
   val minClasses: Int = config.getInt("progen.noOfClasses.min")

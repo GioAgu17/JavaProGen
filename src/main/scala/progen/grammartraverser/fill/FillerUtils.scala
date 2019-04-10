@@ -70,7 +70,6 @@ object FillerUtils {
     if(!forInterface && signature.fromInterface){
       val modifierNode = methodHeaderTree.node.toNodes.head
       val modifierTree = methodHeaderTree.add(modifierNode,IDGenerator.nextID)
-      // TODO: Randomize over the modifiers and use Prolog to validate
       val specificModifier = modifierNode.toNodes.head.toNodes.head
       val specificModifierTree = modifierTree.add(new Node(specificModifier.description,specificModifier.alternative,specificModifier.edges,specificModifier.terminal),IDGenerator.nextID)
     }
@@ -81,7 +80,7 @@ object FillerUtils {
     val typeTree = resultTypeTree.add(typeNode,IDGenerator.nextID)
     val nodeType = if(globalTable.primitiveTypes.contains(signature.returnType)) typeNode.toNodes(1) else typeNode.toNodes.head
     val nodeTypeTree = typeTree.add(typeNode,IDGenerator.nextID)
-    val prefix = if(!forInterface && signature.fromInterface) "" else "\n\t"
+    val prefix = if(!forInterface && signature.fromInterface) "" else "\t"
     val specificReturnTypeTree = FillerUtils.visitUntilDFS("<identifier>",nodeType,nodeTypeTree).add(new Node(prefix+signature.returnType,false,List(),true),IDGenerator.nextID)
     val methodDeclaratorNode = methodHeaderTree.node.toNodes(2)
     val methodDeclTree = methodHeaderTree.add(methodDeclaratorNode,IDGenerator.nextID)

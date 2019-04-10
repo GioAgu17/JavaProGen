@@ -22,7 +22,7 @@ class ClassGeneratorTest extends FunSuite with Logging {
     val rules = bufferedSrc.getLines().toList
     bufferedSrc.close()
     val configurationRetriever = new ConfigurationRetriever(ConfigFactory.load("my_app.conf"))
-    val clientRpc = new ClientRpc
+    val clientRpc = new ClientRpc(configurationRetriever.getUseServerRPC)
     val ok = clientRpc.setRules(rules)
     assert(ok)
     ServerRPC.start()

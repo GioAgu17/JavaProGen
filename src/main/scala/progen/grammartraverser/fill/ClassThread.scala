@@ -7,12 +7,11 @@ import progen.peg.entities.{ConstructorSignature, GlobalTable, MethodSignature}
 import grizzled.slf4j.Logging
 import progen.grammartraverser.AST
 import progen.grammartraverser.gen.BodyGenerator
-import progen.grammartraverser.utils.IDGenerator
+import progen.grammartraverser.utils.{GlobalVariables, IDGenerator}
 import progen.prolog.ClientRpc
 import progen.symtab.SymTab.SymTabSimple
 import progen.symtab.{SymTab, SymTabEntry, SymTabEntryKind}
 
-import scala.util.Random
 
 class ClassThread (val context: (GlobalTable,List[SymTab]), val grammar: Graph, val clientRpc: ClientRpc, val classSymTab: SymTab, val treeRoot: AST[Node]) extends Runnable with Logging {
   override def run(): Unit = {
@@ -48,7 +47,7 @@ class ClassThread (val context: (GlobalTable,List[SymTab]), val grammar: Graph, 
 //
 //      val mbTreeAndSymTabTest = Random.shuffle( mbTreesAndSymTabs).head
 //      val testFilled = new BodyGenerator(context,grammar,clientRpc).traverse(mbTreeAndSymTabTest._1,mbTreeAndSymTabTest._2)
-    val mbTreesFilled: List[AST[Node]] = mbTreesAndSymTabs.map(mt => new BodyGenerator(context, grammar,clientRpc).traverse(mt._1,mt._2))
+     val mbTreesFilled: List[AST[Node]] = mbTreesAndSymTabs.map(mt => new BodyGenerator(context, grammar,clientRpc).traverse(mt._1,mt._2))
 
       println("METHOD BODY TREES FILLED IN TREE FOR CLASS :" + className)
       val constrBodyTrees: List[AST[Node]] = FillerUtils.findTreesWithNoChildren(classDeclaration, "<constructorbody>")
@@ -64,11 +63,11 @@ class ClassThread (val context: (GlobalTable,List[SymTab]), val grammar: Graph, 
       println("CONSTRUCTOR BODY TREES FILLED IN TREE FOR CLASS: " + className)
 
     val fileName = classDeclaration.children(1).children.head.node.description
-    val file = new File("generated\\"+fileName+".java")
+    val file = new File("C:\\Users\\giova\\Documents\\Thesis_Project\\Trials\\src\\main\\java\\generated\\"+fileName+".java")
     val bw = new BufferedWriter(new FileWriter(file))
     bw.write("package generated;\n"+classMembersFilled.getClassRep)
     bw.close()
-
+    println("Lines of code generated: "+GlobalVariables.LOC)
 
 
   }

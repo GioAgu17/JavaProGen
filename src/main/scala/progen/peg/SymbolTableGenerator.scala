@@ -28,4 +28,24 @@ class SymbolTableGenerator(val configurationRetriever: ConfigurationRetriever,va
     symTabCU.next = Option(classSymTabs)
     classSymTabs
   }
+
+  /**
+    * create a new Sym Tab from the new generated Class and update the sym tabs
+    * @param c the new added class
+    * @param prevSymTabs the previous list of SymTabs
+    * @return the new Sym Tab
+    */
+  def addClassToSymTabs(c: Class, prevSymTabs: List[SymTab]) : SymTab ={
+    val symTabCU = prevSymTabs.head.prev match{
+      case Some(st) => st
+      case None => sys.error("impossible to find the symbol table of compilation unit")
+    }
+    val newSymTab = SymTabSimple(new SymTabEntry(SymTabEntryKind.CLASS,Option(c.name),c.superClass,c.interfaces,Option(c.methods),Option(c.constructors),Option(c.fields),None,None,None),Option(symTabCU),None)
+    symTabCU.next match{
+      case Some(ls) => symTabCU.next = Option(newSymTab :: ls)
+      case None => symTabCU.next = Option(List(newSymTab))
+    }
+    newSymTab
+  }
+
 }

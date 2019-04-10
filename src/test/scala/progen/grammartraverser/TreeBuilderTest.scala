@@ -5,6 +5,7 @@ import network.server.ServerRPC
 import org.scalatest.FunSuite
 import progen.ConfigurationRetriever
 import progen.grammarparser.{Graph, ParserGen}
+import progen.grammartraverser.utils.GlobalVariables
 import progen.peg._
 import progen.peg.entities.{Class, GlobalTable, InheritanceChain, Interface}
 import progen.prolog.{ClientRpc, QueryConstructor}
@@ -18,7 +19,7 @@ class TreeBuilderTest extends FunSuite{
   val rules: List[String] = bufferedSrc.getLines().toList
   bufferedSrc.close()
   val configurationRetriever = new ConfigurationRetriever(ConfigFactory.load("my_app.conf"))
-  val clientRpc = new ClientRpc
+  val clientRpc = new ClientRpc(configurationRetriever.getUseServerRPC)
   val ok: Boolean = clientRpc.setRules(rules)
   assert(ok)
   ServerRPC.start()
@@ -35,8 +36,10 @@ class TreeBuilderTest extends FunSuite{
   val gramBufferedSrc : BufferedSource= Source.fromFile("src/main/resources/featherweight_java.txt")
   val gramFile: List[String] = gramBufferedSrc.getLines().toList
   val grammarGraph: Graph = ParserGen.buildGraph(gramFile)
-
   val context: ((List[SymTab],Int),GlobalTable) = ((symbolTables,lastOffSet),globalTable)
+
+  // update loc
+  GlobalVariables.LOC = classNames.size + interfaces.size
 
 
   test("second phase generation"){

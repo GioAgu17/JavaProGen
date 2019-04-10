@@ -6,9 +6,8 @@ import progen.prolog.Check.ops._
 import progen.prolog.{ClientRpc, QueryConstructor}
 import grizzled.slf4j.Logging
 import progen.grammartraverser.AST
-import collection.{mutable => m}
 import progen.grammartraverser.gen.feasibilityengine.finders.FinderFactory
-import progen.grammartraverser.utils.{IDGenerator, IdentifierHandler, WeightInitializer, WeightedSampler}
+import progen.grammartraverser.utils._
 import progen.symtab.{ScopeHandler, SymTab, TypeHandler}
 
 import scala.util.Random
@@ -124,7 +123,13 @@ class BodyGenerator(val context: (GlobalTable,List[SymTab]), val grammarGraph: G
           val st = ScopeHandler.currentScope
           if(t.node.alternative){
             val edges = t.node.edges
+            val edgesWeights = edges.map(e => e.weight)
+            val edgeSize = edges.size
+            // updating the weights to exclude the previous selected edge
+            edges.foreach(e => if(e.toNode.description == ast.node.description) e.weight = 0.0 else e.weight = 1/(edgeSize-1))
             val newNode = edges(WeightedSampler.weightedSampling(edges.map(_.weight))).toNode
+            // restore previous weights value
+            (edges zip edgesWeights).foreach(ew => ew._1.weight = ew._2)
            // val pickedUpNode =  Random.shuffle(t.node.toNodes.filter(n => n.description != ast.node.description)).head
             t.children -= ast
             ScopeHandler.enterScope(t.node,st)
@@ -136,6 +141,7 @@ class BodyGenerator(val context: (GlobalTable,List[SymTab]), val grammarGraph: G
         case None => (None,tab)
       }
     }
+    println("GOBACKTOALTERN with ast: "+tree.node.description.toUpperCase)
     val res = goUpwards(tree,symTab)
     res._1 match{
       case Some(t) =>
@@ -178,17 +184,14 @@ class BodyGenerator(val context: (GlobalTable,List[SymTab]), val grammarGraph: G
               Some(v)
             }else {
 
-              if(QueryConstructor.getCounter(v.node.description) < 2) {
+              if(QueryConstructor.getCounter(v.node.description) < GlobalVariables.noOfPrologIterations) {
                 ast.children -= v
-                //v.children.clear()
                 ScopeHandler.leaveScope(newNode,symTab)
                 val newSt = ScopeHandler.currentScope
                 QueryConstructor.incrementCounter(v.node.description)
-                //traverseBody(Option(v),possibleNames,newSt)
                 val result = traverseNonTerminal(newNode, ast, newPossibleNames,newSt)
                 QueryConstructor.resetCounter(v.node.description)
                 result
-
               }else {
                 QueryConstructor.resetCounter(v.node.description)
                 val names = IdentifierHandler.handleIdentifier(v,symTab,context,newPossibleNames)

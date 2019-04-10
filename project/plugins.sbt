@@ -1,0 +1,1 @@
+addSbtPlugin("com.github.mwz" % "sbt-sonar" % "1.6.0")

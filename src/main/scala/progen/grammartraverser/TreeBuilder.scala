@@ -7,7 +7,7 @@ import progen.ConfigurationRetriever
 import progen.grammarparser.{Graph, Node}
 import progen.grammartraverser.AST.ASTSimple
 import progen.grammartraverser.fill.{ClassThread, FillerUtils, InterfaceThread}
-import progen.grammartraverser.utils.{IDGenerator, WeightInitializer}
+import progen.grammartraverser.utils.{GlobalVariables, IDGenerator, WeightInitializer}
 import progen.peg.entities.GlobalTable
 import progen.prolog.ClientRpc
 import progen.symtab.SymTab
@@ -48,30 +48,32 @@ class TreeBuilder(val configurationRetriever: ConfigurationRetriever,val clientR
     while(!interfExecutor.awaitTermination(10,TimeUnit.MINUTES)){
       info("Awaiting completion of all interface threads")
     }
-
+    println("Lines of code of all interfaces: "+GlobalVariables.LOC)
     val classTypeDeclTrees = splittedTypeDeclTrees._2
     val symTabsAndClassTypeDeclTrees = symTabs zip classTypeDeclTrees
-    symTabsAndClassTypeDeclTrees.foreach(st => new ClassThread((globalTable,symTabs),grammarGraph,clientRpc,st._1,st._2).run())
-    val st = symTabsAndClassTypeDeclTrees.head
+    // all classes without threads
+   // symTabsAndClassTypeDeclTrees.foreach(st => new ClassThread((globalTable,symTabs),grammarGraph,clientRpc,st._1,st._2).run())
+
+
+    // just first class
+//    val st = symTabsAndClassTypeDeclTrees.head
 //    val classThread = new ClassThread((globalTable,symTabs),grammarGraph,clientRpc,st._1,st._2)
 //    classThread.run()
-//    val noOfClass = classTypeDeclTrees.size
-//    // create a new fixed thread pool executor, with noOfClass threads
-//    val classExecutor =  Executors.newFixedThreadPool(noOfClass).asInstanceOf[ThreadPoolExecutor]
-//    // for each class, create the task and submit it to the executor to execute
-//    for(st <- symTabsAndClassTypeDeclTrees){
-//      val cThread = new ClassThread((globalTable,symTabs),grammarGraph,clientRpc,st._1,st._2)
-//      classExecutor.execute(cThread)
-//    }
-//    // previously tasks starts to execute, but no new tasks will be accepted
-//    classExecutor.shutdown()
-//    // blocks until all tasks have completed execution after a shutdown request
-//    while(!classExecutor.awaitTermination(20, TimeUnit.MINUTES)){
-//      info("Awaiting completion of all class threads")
-//    }
 
 
-
+    // all classes with threads
+    val classExecutor =  Executors.newFixedThreadPool(GlobalVariables.noOfClassThreads).asInstanceOf[ThreadPoolExecutor]
+    // for each class, create the task and submit it to the executor to execute
+    for(st <- symTabsAndClassTypeDeclTrees){
+      val cThread = new ClassThread((globalTable,symTabs),grammarGraph,clientRpc,st._1,st._2)
+      classExecutor.execute(cThread)
+    }
+    // previously tasks starts to execute, but no new tasks will be accepted
+    classExecutor.shutdown()
+    // blocks until all tasks have completed execution after a shutdown request
+    while(!classExecutor.awaitTermination(20, TimeUnit.MINUTES)){
+      info("Awaiting completion of all class threads")
+    }
     cuTree
   }
 
@@ -98,5 +100,24 @@ class TreeBuilder(val configurationRetriever: ConfigurationRetriever,val clientR
     loop(typedeclsNode,noOfRefTypes,typeDeclsTree)
     val typeDeclTrees = FillerUtils.findTreesWithNoChildren(cuTree,"<typedeclaration>")
     typeDeclTrees
+  }
+
+  /**
+    * Starts the class thread that fills the partial class and generates the method and constructor bodies
+    * @param grammarGraph the graph of the grammar
+    * @param context the context for generating other things
+    * @param cuAST the compilation unit tree
+    * @param newSymTab the new SymTab representing the class
+    * @return the compilation unit tree filled with the new class
+    */
+  def addClass(grammarGraph: Graph,context: ((List[SymTab],Int),GlobalTable), cuAST: AST[Node], newSymTab: SymTab): AST[Node] ={
+    WeightInitializer.setWeightsToConfiguration(grammarGraph.nodes.toList)
+    val typeDeclsTree = cuAST.children.head
+    val typeDeclsNode = typeDeclsTree.node
+    val typeDeclNode = typeDeclsNode.toNodes.head.toNodes.head
+    val typeDeclTree = typeDeclsTree.add(typeDeclNode,IDGenerator.nextID)
+    val classThread = new ClassThread((context._2,context._1._1),grammarGraph,clientRpc,newSymTab,typeDeclTree)
+    classThread.run()
+    cuAST
   }
 }

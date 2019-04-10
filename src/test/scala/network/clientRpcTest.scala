@@ -13,7 +13,7 @@ class clientRpcTest extends FunSuite {
     val bufferedSrc = Source.fromFile("src/main/resources/prolog.txt")
     val rules = bufferedSrc.getLines().toList
     bufferedSrc.close()
-    val clientRpc = new ClientRpc
+    val clientRpc = new ClientRpc(true)
     ServerRPC.start()
     val test = clientRpc.setRules(rules)
     assert(test)

@@ -71,13 +71,9 @@ class ClassInfoFiller(val symTab: SymTab) {
     }
     val noOfCBD = constructors.size +noOfFieldDecls + methods.size
     val f = classBodyTree.node.toNodes.map(n => n.description match{
-      case "{" =>
-        val node = new Node("{\n\t",n.alternative,n.edges,n.terminal)
-        classBodyTree.add(node,IDGenerator.nextID)
+      case "{" => classBodyTree.add(n,IDGenerator.nextID)
       case "<classbodydeclarations>" => if(noOfCBD == 0) classBodyTree else handleCBDS(n,noOfCBD,classBodyTree)
-      case "}" =>
-        val node = new Node("\n}",n.alternative,n.edges,n.terminal)
-        classBodyTree.add(node,IDGenerator.nextID)
+      case "}" => classBodyTree.add(n,IDGenerator.nextID)
     })
     classBodyTree
   }

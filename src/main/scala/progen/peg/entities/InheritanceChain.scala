@@ -71,7 +71,7 @@ class InheritanceChain(val chain: List[String]){
     case h::t => if(acc.isEmpty) genFields(t, createFieldList(h._1,h._2,possibleTypes,prefix) :: acc,possibleTypes,prefix) else genFields(t,(createFieldList(h._1,h._2,possibleTypes,prefix)++acc.head.map(f => new Field(f.stype,f.name,true))) :: acc,possibleTypes,prefix)
   }
   def createFieldList(no:Int, index: Int, possibleTypes: List[String], prefix: String): List[Field] ={
-    val res = List.tabulate(no)(i => new Field(possibleTypes(Random.nextInt(possibleTypes.size)),prefix + (index+i),false))
+    val res = List.tabulate(no)(i => new Field(Random.shuffle(possibleTypes).head,prefix + (index+i),false))
     res
   }
 

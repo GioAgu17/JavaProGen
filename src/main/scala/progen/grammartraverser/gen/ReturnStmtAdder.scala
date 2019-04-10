@@ -36,6 +36,13 @@ object ReturnStmtAdder {
     WeightInitializer.setWeightsToConfiguration(grammarGraph.nodes.toList)
   }
 
+  /**
+    * Determines whether there are resources in the current scope for adding a return statement
+    * @param retType the return type of the return statement to add
+    * @param tab the current scope represented by the symbol table
+    * @param globalTable the global table
+    * @return true if there are enough resources for the return statement, false otherwise
+    */
   def enoughResources(retType: String, tab: SymTab,globalTable:GlobalTable): Boolean ={
     if(!globalTable.primitiveTypes.contains(retType)){
       val allPossibleTypes = TypeHandler.allPossibleTypes(tab)
@@ -52,6 +59,13 @@ object ReturnStmtAdder {
     }else
       true
   }
+
+  /**
+    * Finds all the methods available in the current scope with the return type
+    * @param retType the return type that the methods must have
+    * @param tab the symbol table representing the current scope
+    * @return a list of method signatures having the return type equal to @retType
+    */
   def methodsWithRetType(retType: String,tab: SymTab): List[MethodSignature] ={
     val methName = tab.symTabEntry.name match{
       case Some(n) => n
@@ -64,6 +78,12 @@ object ReturnStmtAdder {
     methodsAvailable
   }
 
+  /**
+    *
+    * @param retType
+    * @param tab
+    * @return
+    */
   def constructorsWithRetType(retType:String,tab: SymTab): List[ConstructorSignature] ={
     tab.lookUpConstructors(retType) match{
       case Some(cs) => cs

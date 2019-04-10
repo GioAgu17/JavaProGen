@@ -48,7 +48,7 @@ class ConstructorFiller(val symTab: SymTab, val globalTable: GlobalTable){
       FillerUtils.handleFormalParams(formalParamListNode,value, signature.formalParameters,globalTable)
     }
     val node = childrenRemained.last
-    val paren2 = new Node(")\n\t",node.alternative,node.edges,node.terminal)
+    val paren2 = new Node(")",node.alternative,node.edges,node.terminal)
     val paren2Tree = value.add(paren2,IDGenerator.nextID)
     value
   }

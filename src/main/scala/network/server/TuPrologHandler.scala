@@ -128,78 +128,78 @@ object TuPrologHandler extends Logging {
   }
   def askThisRequest(invocation: ThisInvocation): Boolean ={
     val query = "useThisInvocation("+invocation.paramLst+","+invocation.id+","+invocation.depth+")."
-    info("created query: "+query)
+    //logQuery(query)
     val res = engine.solve(query)
     res.isSuccess
   }
   def askSuperRequest(invocation: SuperInvocation): Boolean ={
     val query = "useSuperInvocation("+invocation.paramLst+","+invocation.parId+","+invocation.depth+")."
-    info("created query: "+query)
+        //logQuery(query)
     val res = engine.solve(query)
     res.isSuccess
   }
   def createReturnStmtQuery(stmt: UseRetStmt): String ={
     val query = "useRetStmt('"+stmt.retType+"',"+ stmt.id+","+stmt.depth+")."
-    info("created query: "+query)
+    //logQuery(query)
     query
   }
   def createVarInitQuery(value: VariableInitialization): String ={
     val expectedType = value.expectedType
     val actualType = value.actualType
     val query  = "canInitializeVar('"+expectedType+"','"+actualType+"')."
-    info("created query: "+query)
+    //logQuery(query)
     query
   }
   def createConstrQuery(sign:ConstrSign): String ={
     val query = "canUseConstructor('"+sign.name+"',"+ sign.params+")."
-    info("created query: "+query)
+    //logQuery(query)
     query
 
   }
   def createClassCreationQuery(creation: ClassCreation): String ={
     val query = "useClassInstanceCreation('"+creation._class+"',"+creation.args+")."
-    info("created query: "+query)
-    query
+    // logQuery(query)
+        query
   }
   def createMethInvocationQuery(invocation: MethodInvocation):String={
     val query = "useMethodInvocation('"+invocation.name+"','"+invocation._class+"',"+invocation.args+")."
-    info("created query: "+query)
+    //logQuery(query)
     query
   }
   def createMethodQuery(sign: MethodSign): String ={
     val query = "useMethod('"+ sign.name+"','"+sign.className+"','"+sign.returnType+"',"+sign.paramLst+")."
-    info("created query: "+query)
+    //logQuery(query)
     query
   }
   def createExtendQuery(extend: Extend): String ={
     val query = "canExtend('"+extend.typeName+"','"+ extend.superName + "')."
-    info("created query: "+query)
+    //logQuery(query)
     query
   }
   def createTypeQuery(req: Type): String ={
     val query = "type("+req.`type`+","+req.id+")."
-    info("created query: "+query)
+   // logQuery(query)
     query
   }
   def createTypeFact(typeName: Type): Theory ={
     val fact = "type('"+typeName.`type`+"',"+typeName.id+")."
-    info("created fact: "+fact)
+    //logFact(fact)
     new Theory(fact)
   }
   def createConstrFact(sign: ConstrSign): Theory ={
     val fact = "constructor('"+sign.name+"',"+sign.id+","+sign.params+")."
-    info("created fact: "+fact)
+    //logFact(fact)
     new Theory(fact)
   }
 
   def createMethodFact(sign: MethodSign): Theory ={
     val fact = "method('"+sign.name+"',"+sign.id+",'"+sign.className+"','"+sign.returnType+"',"+sign.paramLst+")."
-    info("created fact: "+fact)
+   // logFact(fact)
     new Theory(fact)
   }
   def createExtendFact(extend: Extend): Theory ={
     val fact = "extends('"+extend.typeName+"','"+extend.superName+"')."
-    info("created fact: "+fact)
+    //logFact(fact)
     new Theory(fact)
   }
 
@@ -210,13 +210,24 @@ object TuPrologHandler extends Logging {
     */
   def createNodeFact(req: Node): Theory ={
     val fact = "node('" + req.description + "'," + req.id+ "," + req.parId+ ","+req.depth+")."
-    info("created fact: "+fact)
+    //logFact(fact)
     new Theory(fact)
   }
   def getTheory:String = {
     engine.getTheory.toString
   }
 
-
+  def logFact(fact: String):Unit ={
+    val strBuilder = new StringBuilder
+    strBuilder.append("created fact: ")
+    strBuilder.append(fact)
+    info(strBuilder.mkString)
+  }
+  def logQuery(query:String):Unit ={
+    val strBuilder = new StringBuilder
+    strBuilder.append("created query: ")
+    strBuilder.append(query)
+    info(strBuilder.mkString)
+  }
 }
 

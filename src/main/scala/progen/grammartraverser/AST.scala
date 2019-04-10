@@ -1,7 +1,9 @@
 package progen.grammartraverser
 
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.{Logger, LoggerFactory}
 import progen.grammarparser.Node
+import progen.grammartraverser.utils.GlobalVariables
 import progen.prolog.ClientRpc
 
 import scala.collection.mutable.ListBuffer
@@ -32,13 +34,20 @@ object AST  {
 
 
     override def add(n: Node,id: Int): AST[Node] = {
+     val stringBuilder = new StringBuilder
       val oldNode = this
       val parId = this.id
 
       if(!n.terminal)
         clientRpc.addNodeToProlog(n.description, id, parId, depth + 1)
+      stringBuilder.append("..............NODE ")
+      stringBuilder.append(n.description)
+      stringBuilder.append(" ADDED WITH FATHER: ")
+      stringBuilder.append(oldNode.node.description)
+      stringBuilder.append("........................")
+      val toTrace = stringBuilder.mkString
+      logger.trace(toTrace)
 
-      logger.trace(".........NODE "+n.description.toUpperCase+" ADDED WITH FATHER: "+oldNode.node.description.toUpperCase+"...............")
       val newNode = new ASTSimple(n,clientRpc,depth+1,id) {
         override val parent: Option[AST[Node]] = Some(oldNode)
       }
@@ -73,18 +82,28 @@ object AST  {
     }
 
     def getTreeRep(root: AST[Node]): String={
-      var sentence = ""
+      val strBuilder = new StringBuilder
       def loop(tree: AST[Node]): Unit ={
         for(i <- tree.children) {
           if (i.node.terminal){
-            if(i.node.description == "{")
-              sentence +=  " " + i.node.description + "\n\t"
-            else if(i.node.description == ";")
-              sentence +=  " " + i.node.description + "\n\t"
-            else if(i.node.description == "}")
-              sentence += " " + i.node.description +"\n"
-            else
-              sentence += " " + i.node.description
+            val descr = i.node.description
+            if(descr == "{" || descr == ";" || descr == "}") {
+              strBuilder.append(" ")
+              strBuilder.append(descr)
+              strBuilder.append("\n\t")
+              GlobalVariables.LOC +=1
+            }
+
+            else if(descr == "}") {
+              strBuilder.append(" ")
+              strBuilder.append(descr)
+              strBuilder.append("\n")
+              GlobalVariables.LOC +=1
+            }
+            else {
+              strBuilder.append(" ")
+              strBuilder.append(descr)
+            }
           }
 
           else
@@ -92,20 +111,27 @@ object AST  {
         }
       }
       loop(root)
-      sentence
+      strBuilder.mkString
     }
     def getSubTree(root: AST[Node]): String ={
-      var sentence = ""
+      val stringBuilder = new StringBuilder
       def loop(tree: AST[Node]): Unit ={
         for(i <- tree.children){
-          if(i.node.terminal)
-            sentence = sentence+ " " + i.node.description
-          else
-            sentence = sentence + " " + i.node.description + " "+ loop(i)
+          if(i.node.terminal){
+            stringBuilder.append(" ")
+            stringBuilder.append(i.node.description)
+          }
+          else{
+            stringBuilder.append(" ")
+            stringBuilder.append(i.node.description)
+            stringBuilder.append(" ")
+            stringBuilder.append(loop(i))
+          }
         }
       }
       loop(root)
-      sentence.replaceAll("\n","")
+      StringUtils.replace(stringBuilder.mkString,"\n","")
+
     }
 
   }

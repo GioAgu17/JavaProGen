@@ -3,6 +3,7 @@ package progen.peg
 import progen.ConfigurationRetriever
 import progen.peg.entities._
 import grizzled.slf4j.Logging
+import progen.grammartraverser.utils.IDGenerator
 import progen.prolog.ClientRpc
 
 import scala.annotation.tailrec
@@ -105,7 +106,7 @@ class ClassGenerator(override val configurationRetriever: ConfigurationRetriever
     fieldMap
   }
   /**
-    * Assigns interfaces by creating an instanc of Interface Assigner
+    * Assigns interfaces by creating an instance of Interface Assigner
     * @return a map from a class name to its optional list of interfaces
     */
   def assignInterfaces(globalTable: GlobalTable): Map[String,Option[List[Interface]]] ={
@@ -205,7 +206,31 @@ class ClassGenerator(override val configurationRetriever: ConfigurationRetriever
     (classAndMethods._1,result)
   }
 
+  /**
+    * Generates a single class by creating its fields, its constructors and method signatures
+    * @param globalTable the global table containing ALREADY the new class
+    * @param newClassName the name of the new class
+    * @return a Class object representing the newly generated class
+    */
+  def genSingleClass(globalTable: GlobalTable,newClassName: String): Class ={
+    val inherChain = new InheritanceChain(List())
+    val noOfFields = configurationRetriever.getNoOfClassFields
+    val fieldPrefix = configurationRetriever.getFieldNamePrefix
+    val possibleTypes = globalTable.primitiveTypes ++ globalTable.classNames
+    val fields = inherChain.createFieldList(noOfFields,0,possibleTypes,fieldPrefix)
 
+    val constrSignGenerator = new ConstructorSignGenerator(configurationRetriever,clientRpc)
+    val noOfConstr = constrSignGenerator.detNoOfConstr(fields)
+    val constructorSignatures  = constrSignGenerator.genConstrSign(newClassName,fields,noOfConstr,IDGenerator.nextID)
+    IDGenerator.id = constructorSignatures.last.id
+
+    val noOfMethods = configurationRetriever.getNoOfMethodsPerClass
+    val methodSignatures = genMethodSignatures(noOfMethods,0,possibleTypes,false,IDGenerator.nextID)
+    IDGenerator.id = methodSignatures.last.id
+
+    val newClass = new Class(newClassName,None,fields,constructorSignatures,methodSignatures,None)
+    newClass
+  }
 
 
 

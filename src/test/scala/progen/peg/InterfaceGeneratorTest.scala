@@ -10,10 +10,11 @@ class InterfaceGeneratorTest extends FunSuite{
     val interfaceNames = List("Inter1", "Inter2", "Inter3", "Inter4", "Inter5")
     val allowedTypes = List("int", "char", "byte", "short", "int")
     val classTypes = List("TENKLOC1","TENKLOC2","TENKLOC3","TENKLOC4","TENKLOC5")
-    val possibleTypes = allowedTypes ++ classTypes
+    val possibleTypes: List[String] = allowedTypes ++ classTypes
     val config: Config = ConfigFactory.load("my_app.conf")
     val configurationRetriever = new ConfigurationRetriever(config)
-    val interfaceGenerator = new InterfaceGenerator(configurationRetriever,new ClientRpc)
+    val clientRpc = new ClientRpc(configurationRetriever.getUseServerRPC)
+    val interfaceGenerator = new InterfaceGenerator(configurationRetriever,clientRpc)
 
 
 

@@ -3,6 +3,7 @@ package progen.peg
 import progen.ConfigurationRetriever
 import progen.peg.entities.GlobalTable
 import grizzled.slf4j.Logging
+import progen.grammartraverser.utils.IDGenerator
 import progen.prolog.ClientRpc
 import progen.symtab.SymTab
 
@@ -48,6 +49,8 @@ class ContextGenerator(val configurationRetriever: ConfigurationRetriever)extend
       val interfaces = interfaceGenerator.genInterfaces(interfaceNames,allowedTypes,classNames)
       info(".............INTERFACES GENERATED.........")
 
+
+
       /* create a global table with all the interfaces and the possible types
       usable by method and constructor bodies in the second phase */
       info(".............GLOBAL TABLE GENERATION STARTED")
@@ -68,4 +71,27 @@ object ContextGenerator {
     List.tabulate(n)(i => prefix + (i + 1))
   }
 }
+
+  /**
+    * Adds a new class to the context by creating a new class names, creating a new global table and instantiating a new Class object
+    * @param clientRpc client RPC to be passed
+    * @param context the previous context that will be updated by this function
+    * @return a new context with the added class
+    */
+  def addClass(clientRpc: ClientRpc, context:((List[SymTab],Int),GlobalTable) ): (((List[SymTab],Int),GlobalTable),SymTab) ={
+    val globTab = context._2
+    val noOfClasses = globTab.classNames.size
+    val classPrefix = configurationRetriever.getClassPrefix
+    val newClassName = classPrefix + noOfClasses.toString
+    val oldClassNames = globTab.classNames
+    val newClassNames = newClassName :: oldClassNames
+    val newGlobTable = new GlobalTable(globTab.interfaces,globTab.primitiveTypes,newClassNames)
+    val classGenerator = new ClassGenerator(configurationRetriever,clientRpc)
+    val classGenerated = classGenerator.genSingleClass(newGlobTable,newClassName)
+    val symbolTableGenerator = new SymbolTableGenerator(configurationRetriever,clientRpc)
+    val newSymTab = symbolTableGenerator.addClassToSymTabs(classGenerated,context._1._1)
+    val newSymTabs = newSymTab :: context._1._1
+    val newContext = ((newSymTabs,context._1._2),context._2)
+    (newContext,newSymTab)
+  }
 }

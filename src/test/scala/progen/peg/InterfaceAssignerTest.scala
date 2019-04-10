@@ -12,7 +12,7 @@ class InterfaceAssignerTest extends FunSuite{
   val configurationRetriever = new ConfigurationRetriever(ConfigFactory.load("my_app.conf"))
   val interfaceAssigner = new InterfaceAssigner(configurationRetriever)
   val classTypes = List("A","C","F","G","H","I","L","M","N","O","P","Q","R","S","T","U","V","Z","W","Y","X")
-  val interfaces = new InterfaceGenerator(configurationRetriever,new ClientRpc).genInterfaces(List("Inter1","Inter2","Inter3","Inter4","Inter5","Inter6","Inter7","Inter8","Inter9","Inter10","Inter11","Inter12"),classTypes,classTypes)
+  val interfaces = new InterfaceGenerator(configurationRetriever,new ClientRpc(configurationRetriever.getUseServerRPC)).genInterfaces(List("Inter1","Inter2","Inter3","Inter4","Inter5","Inter6","Inter7","Inter8","Inter9","Inter10","Inter11","Inter12"),classTypes,classTypes)
   test("test of checkOnConfig function"){
     // based on the actual configuration parameters value, the assertions should be right
     val expected1 = false

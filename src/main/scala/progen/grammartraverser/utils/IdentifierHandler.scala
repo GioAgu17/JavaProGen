@@ -59,7 +59,7 @@ object IdentifierHandler {
   }
   def generateLocVar(locVars:List[LocalVariable],tab:SymTab, initialized: Boolean): String ={
     val existingNames = locVars.map(_.name)
-    val generex = new Generex("[a-z]")
+    val generex = new Generex("[a-z]{3}")
     val pickedUp = generex.random
     if(existingNames.contains(pickedUp))
       generateLocVar(locVars,tab,initialized)

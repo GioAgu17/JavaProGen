@@ -1,3 +1,4 @@
+import sbtsonar.SonarPlugin.autoImport.sonarProperties
 name := "scala_project"
 
 version := "0.1"
@@ -38,3 +39,18 @@ libraryDependencies += "org.eclipse.jdt" % "org.eclipse.jdt.core" % "3.15.0"
 dependencyOverrides += "org.eclipse.platform" % "org.eclipse.equinox.app" % "1.3.600"
 
 libraryDependencies += "io.grpc" % "grpc-netty" % "1.9.0"
+
+
+sonarProperties ++= Map(
+  "sonar.projectName" -> "ProGen",
+  "sonar.projectKey" -> "pro-gen",
+  "sonar.sources" -> "src/main/scala",
+  "sonar.tests" -> "src/test/scala",
+  "sonar.scoverage.reportPath" -> "target/scala-2.12/scoverage-report/scoverage.xml",
+  "sonar.scala.scapegoat.reportPath" -> "target/scala-2.12/scapegoat-report/scapegoat.xml"
+)
+
+// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.0"
+
+
