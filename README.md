@@ -1,7 +1,6 @@
-# Scala application
+# ProGen
 
-The scala application is the core of the project: it takes as input the Java grammar, ingests it, starts to generate strings of code and asks the Prolog system for syntactic correctness of the generated code. 
-My effort has been put to offer the most of the features of functional programming, from the design to the implementation.
+Random Java programs generator using Prolog-based grammar validation and functional programming.
 
 ## Getting Started
 
